@@ -12,6 +12,13 @@
     "ecmaVersion": 2015,
     "sourceType": "module"
   },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  },
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
     "react/react-in-jsx-scope": "off",
@@ -20,6 +27,8 @@
     "comma-dangle": "off",
     "no-underscore-dangle": "off",
     "react/jsx-filename-extension": "off",
-    "react/jsx-props-no-spreading": "off"
+    "react/jsx-props-no-spreading": "off",
+    "import/extensions": "off",
+    "no-use-before-define": "off"
   }
 }
