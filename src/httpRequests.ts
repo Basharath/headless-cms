@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // const baseURL = process.env.NEXT_PUBLIC_API_URL;
 const baseURL = 'http://localhost:8080/api';
-// axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = true;
 const API = axios.create({ baseURL });
 
 API.interceptors.response.use(null, (error) => {
@@ -31,10 +31,10 @@ export const addPost = (newPost) => API.post(postsUrl, newPost);
 export const updatePost = (id, post) => API.put(`${postsUrl}/${id}`, post);
 export const deletePost = (id) => API.delete(`${postsUrl}/${id}`);
 
-export const getUserData = () =>
-  API.get(`${usersUrl}/token`, { withCredentials: true });
+export const getUserData = () => API.get(`${usersUrl}/token`);
 export const signin = (userData) => API.post(`${usersUrl}/signin`, userData);
 export const signup = (userData) => API.post(`${usersUrl}/signup`, userData);
+export const signout = () => API.get(`${usersUrl}/signout`);
 export const changePass = (userData) =>
   API.post(`${usersUrl}/changepassword`, userData);
 
