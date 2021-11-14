@@ -1,9 +1,20 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // const baseURL = process.env.NEXT_PUBLIC_API_URL;
 const baseURL = 'http://localhost:8080/api';
 axios.defaults.withCredentials = true;
 const API = axios.create({ baseURL });
+
+let authToken = '';
+export const setToken = (token) => {
+  authToken = token;
+};
+
+API.interceptors.request.use((req) => {
+  req.headers.Authorization = authToken || '';
+  return req;
+});
 
 API.interceptors.response.use(null, (error) => {
   const expectedError =
@@ -12,7 +23,7 @@ API.interceptors.response.use(null, (error) => {
     error.response.status < 500;
 
   if (!expectedError) {
-    console.log('An unexpected error occurred');
+    toast.error('An unexpected error occurred');
   }
 
   return Promise.reject(error);
