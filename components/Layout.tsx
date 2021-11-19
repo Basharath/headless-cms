@@ -1,4 +1,4 @@
-// import { useContext } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -11,11 +11,24 @@ import Button from '@mui/material/Button';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import IconButton from '@mui/material/IconButton';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import { signout } from '../src/httpRequests';
+import { signout, getUserData } from '../src/httpRequests';
+// import { User } from '../src/types';
 
 export default function Layout(props) {
-  const { children, title, user } = props;
+  const { children, title } = props;
+  const [user, setUser] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getUserData();
+        setUser(res.data);
+      } catch (err) {
+        console.log('Unauthenticated user');
+      }
+    })();
+  }, []);
 
   const handleSignout = async () => {
     await signout();
