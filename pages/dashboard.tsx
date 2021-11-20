@@ -10,7 +10,7 @@ import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import Layout from '../components/Layout';
 import { getPosts, getUserData, setToken } from '../src/httpRequests';
 
-export default function Dashboard({ user, posts }) {
+export default function Dashboard({ posts }) {
   const router = useRouter();
 
   const columns: GridColDef[] = [
@@ -26,7 +26,7 @@ export default function Dashboard({ user, posts }) {
   ];
 
   return (
-    <Layout title='HeadlessCMS - Dashboard' user={user}>
+    <Layout title='HeadlessCMS - Dashboard'>
       <div style={{ height: 400, width: '100%' }}>
         <Typography variant='h5' textAlign='center' py={2}>
           POSTS
@@ -75,7 +75,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
     return {
       props: {
-        user,
         posts,
       },
     };
