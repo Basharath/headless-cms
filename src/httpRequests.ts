@@ -37,10 +37,10 @@ const usersUrl = '/users';
 // const categoryPosts = '/category';
 
 export const getPosts = () => API.get(postsUrl);
-export const getPost = (id) => API.get(`${postsUrl}/${id}`);
+export const getPost = (id: string) => API.get(`${postsUrl}/${id}`);
 export const addPost = (newPost) => API.post(postsUrl, newPost);
 export const updatePost = (id, post) => API.put(`${postsUrl}/${id}`, post);
-export const deletePost = (id) => API.delete(`${postsUrl}/${id}`);
+export const deletePost = (id: string) => API.delete(`${postsUrl}/${id}`);
 
 export const getUserData = () => API.get(`${usersUrl}/token`);
 export const signin = (userData) => API.post(`${usersUrl}/signin`, userData);
