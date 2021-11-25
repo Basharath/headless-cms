@@ -1,12 +1,30 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 import { useState, useRef, ChangeEvent, SyntheticEvent } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+// import Chip from '@mui/material/Chip';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
 import Button from '@mui/material/Button';
 import { GetServerSideProps } from 'next';
 import Layout from '../components/Layout';
 import { getPost } from '../src/httpRequests';
+
+const ITEM_HEIGHT = 30;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
 
 export default function post({ data }) {
   const initialState = {
@@ -46,7 +64,7 @@ export default function post({ data }) {
   const [httpError, setHttpError] = useState('');
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const input = e.currentTarget;
+    const input = e.target;
     if (httpError) setHttpError('');
 
     const errs = { ...errors };
@@ -68,7 +86,7 @@ export default function post({ data }) {
         <Typography variant='h5' textAlign='center' py={2}>
           Post details
         </Typography>
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Box
             component='form'
             sx={{
@@ -77,7 +95,6 @@ export default function post({ data }) {
               width: '65%',
               mr: '25px',
               mx: 'auto',
-              // mt: '100px',
             }}
             autoComplete='off'
             onSubmit={handleSubmit}
@@ -161,11 +178,65 @@ export default function post({ data }) {
               Show form
             </Button>
           </Box>
-          <Box sx={{ width: '30%', bgcolor: 'red', display: 'block' }}>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Iste, velit
-            quibusdam et quo inventore reprehenderit, ratione accusantium odio
-            neque ipsum eum eligendi possimus excepturi ducimus sapiente eveniet
-            placeat temporibus at!
+          <Box
+            sx={{
+              width: '30%',
+              display: 'block',
+            }}
+          >
+            <FormControl sx={{ m: 1, width: 300 }}>
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={form.type}
+                onChange={handleChange}
+                input={<OutlinedInput label='some' />}
+                name='type'
+                // MenuProps={MenuProps}
+                sx={{ py: 2, maxHeight: 40 }}
+              >
+                {['Post', 'Page', 'Third post'].map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl sx={{ m: 1, width: 300 }}>
+              <InputLabel>Tags</InputLabel>
+              <Select
+                value={form.tags}
+                onChange={handleChange}
+                input={<OutlinedInput label='some' />}
+                name='tags'
+                MenuProps={MenuProps}
+                sx={{ py: 2, maxHeight: 40 }}
+              >
+                {['Post', 'Page', 'Third post'].map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl sx={{ m: 1, width: 300 }}>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={form.categories}
+                onChange={handleChange}
+                input={<OutlinedInput label='some' />}
+                name='categories'
+                // MenuProps={MenuProps}
+                sx={{ py: 2, maxHeight: 40 }}
+              >
+                {['Post', 'Page', 'Third post'].map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         </Box>
       </div>
