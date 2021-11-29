@@ -1,5 +1,11 @@
 /* eslint-disable react/jsx-no-comment-textnodes */
-import { useState, useRef, ChangeEvent, SyntheticEvent } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  ChangeEvent,
+  SyntheticEvent,
+} from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -11,9 +17,12 @@ import Select from '@mui/material/Select';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import Button from '@mui/material/Button';
+import DateAdapter from '@mui/lab/AdapterDayjs';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import DateTimePicker from '@mui/lab/DateTimePicker';
 import { GetServerSideProps } from 'next';
 import Layout from '../components/Layout';
-import { getPost } from '../src/httpRequests';
+import { getPost, getCategories, getTags } from '../src/httpRequests';
 
 const ITEM_HEIGHT = 30;
 const ITEM_PADDING_TOP = 8;
@@ -34,7 +43,7 @@ export default function post({ data }) {
     content: data.content,
     author: data.author,
     tags: data.tags,
-    categories: data.categories,
+    categories: data.categories[0],
     thumbnail: data.thumbnail,
     images: data.images,
     updatedAt: data.updatedAt,
@@ -62,6 +71,19 @@ export default function post({ data }) {
   const [form, setForm] = useState(initialState);
   const [errors, setErrors] = useState(errorState);
   const [httpError, setHttpError] = useState('');
+  const [tagArray, setTagArray] = useState([]);
+  const [catArray, setCatArray] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      const tagRes = await getTags();
+      const tagResult = tagRes.data;
+      const catRes = await getCategories();
+      const catResult = catRes.data;
+      setTagArray(tagResult);
+      setCatArray(catResult);
+    })();
+  }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
@@ -75,6 +97,7 @@ export default function post({ data }) {
     setErrors(errs);
     setForm({ ...form, [input.name]: input.value });
   };
+
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
     console.log('form', form);
@@ -162,18 +185,7 @@ export default function post({ data }) {
                   'body { font-family: Roboto,Helvetica,Arial,sans-serif; font-size:17px }',
               }}
             />
-            <div>
-              <TextField
-                label='Title'
-                size='small'
-                type='text'
-                name='title'
-                value={form.title}
-                onChange={handleChange}
-                error={!!errors.title}
-                helperText={errors.title}
-              />
-            </div>
+
             <Button type='submit' variant='contained'>
               Show form
             </Button>
@@ -185,16 +197,34 @@ export default function post({ data }) {
             }}
           >
             <FormControl sx={{ m: 1, width: 300 }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={form.status}
+                onChange={handleChange}
+                input={<OutlinedInput label='Status' />}
+                name='status'
+                MenuProps={MenuProps}
+                sx={{ py: 2, maxHeight: 40 }}
+              >
+                {['Published', 'Draft'].map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl sx={{ m: 1, width: 300 }}>
               <InputLabel>Type</InputLabel>
               <Select
                 value={form.type}
                 onChange={handleChange}
-                input={<OutlinedInput label='some' />}
+                input={<OutlinedInput label='Type' />}
                 name='type'
-                // MenuProps={MenuProps}
+                MenuProps={MenuProps}
                 sx={{ py: 2, maxHeight: 40 }}
               >
-                {['Post', 'Page', 'Third post'].map((name) => (
+                {['Post', 'Page'].map((name) => (
                   <MenuItem key={name} value={name}>
                     {name}
                   </MenuItem>
@@ -207,14 +237,15 @@ export default function post({ data }) {
               <Select
                 value={form.tags}
                 onChange={handleChange}
-                input={<OutlinedInput label='some' />}
+                input={<OutlinedInput label='Tags' />}
                 name='tags'
+                multiple
                 MenuProps={MenuProps}
                 sx={{ py: 2, maxHeight: 40 }}
               >
-                {['Post', 'Page', 'Third post'].map((name) => (
-                  <MenuItem key={name} value={name}>
-                    {name}
+                {tagArray.map((tag) => (
+                  <MenuItem key={tag.name} value={tag._id}>
+                    {tag.name}
                   </MenuItem>
                 ))}
               </Select>
@@ -225,18 +256,32 @@ export default function post({ data }) {
               <Select
                 value={form.categories}
                 onChange={handleChange}
-                input={<OutlinedInput label='some' />}
+                input={<OutlinedInput label='Category' />}
                 name='categories'
-                // MenuProps={MenuProps}
+                MenuProps={MenuProps}
                 sx={{ py: 2, maxHeight: 40 }}
               >
-                {['Post', 'Page', 'Third post'].map((name) => (
-                  <MenuItem key={name} value={name}>
-                    {name}
+                {catArray.map((cat) => (
+                  <MenuItem key={cat.name} value={cat._id}>
+                    {cat.name}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
+
+            <LocalizationProvider dateAdapter={DateAdapter}>
+              <DateTimePicker
+                label='Date&Time picker'
+                value={form.updatedAt}
+                onChange={(newValue) =>
+                  setForm((prev) => ({ ...prev, updatedAt: newValue }))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} sx={{ m: 1, width: 300 }} />
+                )}
+                name='updatedAt'
+              />
+            </LocalizationProvider>
           </Box>
         </Box>
       </div>
