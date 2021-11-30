@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable react/jsx-no-comment-textnodes */
 import {
   useState,
@@ -20,6 +21,11 @@ import Button from '@mui/material/Button';
 import DateAdapter from '@mui/lab/AdapterDayjs';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import DateTimePicker from '@mui/lab/DateTimePicker';
+import IconButton from '@mui/material/IconButton';
+import InputBase from '@mui/material/InputBase';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import { styled } from '@mui/material/styles';
 import { GetServerSideProps } from 'next';
 import Layout from '../components/Layout';
 import { getPost, getCategories, getTags } from '../src/httpRequests';
@@ -34,6 +40,10 @@ const MenuProps = {
     },
   },
 };
+
+const Input = styled('input')({
+  display: 'none',
+});
 
 export default function post({ data }) {
   const initialState = {
@@ -103,8 +113,22 @@ export default function post({ data }) {
     console.log('form', form);
   };
 
+  const copyText = (text) => {
+    const textArea = document.createElement('textarea');
+    textArea.style.cssText = 'position: absolute; left: -100%;';
+
+    try {
+      document.body.appendChild(textArea);
+      textArea.value = text;
+      textArea.select();
+      document.execCommand('copy');
+    } finally {
+      document.body.removeChild(textArea);
+    }
+  };
+
   return (
-    <Layout title={data.title}>
+    <Layout title={data.title || 'New Post'}>
       <div style={{ width: '100%' }}>
         <Typography variant='h5' textAlign='center' py={2}>
           Post details
@@ -271,7 +295,7 @@ export default function post({ data }) {
 
             <LocalizationProvider dateAdapter={DateAdapter}>
               <DateTimePicker
-                label='Date&Time picker'
+                label='Update date'
                 value={form.updatedAt}
                 onChange={(newValue) =>
                   setForm((prev) => ({ ...prev, updatedAt: newValue }))
@@ -279,9 +303,100 @@ export default function post({ data }) {
                 renderInput={(params) => (
                   <TextField {...params} sx={{ m: 1, width: 300 }} />
                 )}
-                name='updatedAt'
               />
             </LocalizationProvider>
+
+            <Box
+              sx={{ m: 1, width: 300, display: 'flex', alignItems: 'center' }}
+            >
+              <Typography>Thumbnail image</Typography>
+              <label htmlFor='thumbnail-image'>
+                <Input
+                  accept='image/*'
+                  id='thumbnail-image'
+                  type='file'
+                  onChange={(e) => console.log('e', e.target.files)}
+                />
+                <IconButton
+                  color='primary'
+                  aria-label='upload picture'
+                  component='span'
+                >
+                  <PhotoCamera />
+                </IconButton>
+              </label>
+            </Box>
+            {form.thumbnail && (
+              <Box
+                sx={{
+                  p: '2px 4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: '1px solid #c4c4c4',
+                  borderRadius: '5px',
+                  m: 1,
+                  width: 300,
+                }}
+              >
+                <InputBase
+                  sx={{ ml: 1, flex: 1 }}
+                  placeholder={form.thumbnail}
+                  value={form.thumbnail}
+                />
+                <IconButton
+                  sx={{ p: '10px' }}
+                  onClick={() => copyText(form.thumbnail)}
+                >
+                  <ContentCopyIcon />
+                </IconButton>
+              </Box>
+            )}
+
+            <Box
+              sx={{ m: 1, width: 300, display: 'flex', alignItems: 'center' }}
+            >
+              <Typography>Other images</Typography>
+              <label htmlFor='other-images'>
+                <Input
+                  accept='image/*'
+                  id='other-images'
+                  type='file'
+                  onChange={(e) => console.log('e', e.target.files)}
+                />
+                <IconButton
+                  color='primary'
+                  aria-label='upload picture'
+                  component='span'
+                >
+                  <PhotoCamera />
+                </IconButton>
+              </label>
+            </Box>
+
+            {form.images.length > 0 &&
+              form.images.map((img) => (
+                <Box
+                  sx={{
+                    p: '2px 4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    border: '1px solid #c4c4c4',
+                    borderRadius: '5px',
+                    m: 1,
+                    width: 300,
+                  }}
+                  key={img}
+                >
+                  <InputBase
+                    sx={{ ml: 1, flex: 1 }}
+                    placeholder={img}
+                    value={img}
+                  />
+                  <IconButton sx={{ p: '10px' }} onClick={() => copyText(img)}>
+                    <ContentCopyIcon />
+                  </IconButton>
+                </Box>
+              ))}
           </Box>
         </Box>
       </div>
