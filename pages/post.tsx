@@ -28,7 +28,12 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { styled } from '@mui/material/styles';
 import { GetServerSideProps } from 'next';
 import Layout from '../components/Layout';
-import { getPost, getCategories, getTags } from '../src/httpRequests';
+import {
+  getPost,
+  getUserData,
+  getCategories,
+  getTags,
+} from '../src/httpRequests';
 
 const ITEM_HEIGHT = 30;
 const ITEM_PADDING_TOP = 8;
@@ -110,7 +115,51 @@ export default function post({ data }) {
 
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    console.log('form', form);
+
+    const thumbnail = form.thumbnail
+      .split('/')
+      .slice(-2)
+      .join('/')
+      .split('.')[0];
+    const formData = new FormData();
+    formData.append('public_id', thumbnail);
+    formData.append('upload_preset', 'zpreset');
+    // const data = { public_id: thumbnail };
+    try {
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/cloudtale/image/destroy`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+      const result = await res.json();
+      console.log('deleted', result);
+    } catch (err) {
+      console.log('err', err);
+    }
+  };
+
+  const uploadImage = async (e: ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.currentTarget.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'zpreset');
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/cloudtale/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+      const result = await res.json();
+      console.log('res', result);
+      console.log('image', result.secure_url);
+      setForm((prev) => ({ ...prev, thumbnail: result.secure_url }));
+    } catch (err) {
+      console.log('err', err);
+    }
   };
 
   const copyText = (text) => {
@@ -144,7 +193,7 @@ export default function post({ data }) {
               mx: 'auto',
             }}
             autoComplete='off'
-            onSubmit={handleSubmit}
+            // onSubmit={handleSubmit}
           >
             <div>
               <TextField
@@ -209,10 +258,6 @@ export default function post({ data }) {
                   'body { font-family: Roboto,Helvetica,Arial,sans-serif; font-size:17px }',
               }}
             />
-
-            <Button type='submit' variant='contained'>
-              Show form
-            </Button>
           </Box>
           <Box
             sx={{
@@ -220,6 +265,13 @@ export default function post({ data }) {
               display: 'block',
             }}
           >
+            <Button
+              sx={{ m: 1, width: 300 }}
+              onClick={handleSubmit}
+              variant='contained'
+            >
+              Save post
+            </Button>
             <FormControl sx={{ m: 1, width: 300 }}>
               <InputLabel>Status</InputLabel>
               <Select
@@ -315,7 +367,7 @@ export default function post({ data }) {
                   accept='image/*'
                   id='thumbnail-image'
                   type='file'
-                  onChange={(e) => console.log('e', e.target.files)}
+                  onChange={uploadImage}
                 />
                 <IconButton
                   color='primary'
@@ -361,7 +413,7 @@ export default function post({ data }) {
                   accept='image/*'
                   id='other-images'
                   type='file'
-                  onChange={(e) => console.log('e', e.target.files)}
+                  onChange={handleSubmit}
                 />
                 <IconButton
                   color='primary'
@@ -406,6 +458,27 @@ export default function post({ data }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { id }: { id?: string } = query;
+
+  try {
+    const result = await getUserData();
+    const user = result.data;
+
+    if (!user) {
+      return {
+        redirect: {
+          destination: '/',
+          permanent: false,
+        },
+      };
+    }
+  } catch (err) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   if (!id) {
     return {
