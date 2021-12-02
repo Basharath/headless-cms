@@ -19,6 +19,7 @@
     "@mui/x-data-grid": "^4.0.2",
     "@tinymce/tinymce-react": "^3.13.0",
     "axios": "^0.24.0",
+    "cloudinary": "^1.27.1",
     "dayjs": "^1.10.7",
     "joi-browser": "^13.4.0",
     "next": "12.0.3",
