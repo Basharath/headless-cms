@@ -24,9 +24,11 @@ import DateTimePicker from '@mui/lab/DateTimePicker';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { styled } from '@mui/material/styles';
 import { GetServerSideProps } from 'next';
+import { toast } from 'react-toastify';
 import Layout from '../components/Layout';
 import {
   getPost,
@@ -115,29 +117,6 @@ export default function post({ data }) {
 
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-
-    const thumbnail = form.thumbnail
-      .split('/')
-      .slice(-2)
-      .join('/')
-      .split('.')[0];
-    const formData = new FormData();
-    formData.append('public_id', thumbnail);
-    formData.append('upload_preset', 'zpreset');
-    // const data = { public_id: thumbnail };
-    try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/cloudtale/image/destroy`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
-      const result = await res.json();
-      console.log('deleted', result);
-    } catch (err) {
-      console.log('err', err);
-    }
   };
 
   const uploadImage = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -145,20 +124,62 @@ export default function post({ data }) {
       const file = e.currentTarget.files[0];
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', 'zpreset');
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/cloudtale/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      formData.append('upload_preset', process.env.NEXT_PUBLIC_PRESET);
+
+      const res = await fetch(process.env.NEXT_PUBLIC_UPLOAD_URL, {
+        method: 'POST',
+        body: formData,
+      });
       const result = await res.json();
-      console.log('res', result);
-      console.log('image', result.secure_url);
-      setForm((prev) => ({ ...prev, thumbnail: result.secure_url }));
+      return result;
     } catch (err) {
-      console.log('err', err);
+      return toast.error(err.message);
+    }
+  };
+
+  const uploadThumbnail = async (e: ChangeEvent<HTMLInputElement>) => {
+    const result = await uploadImage(e);
+    setForm((prev) => ({ ...prev, thumbnail: result.secure_url }));
+  };
+
+  const uploadOtherImages = async (e: ChangeEvent<HTMLInputElement>) => {
+    const result = await uploadImage(e);
+    setForm((prev) => ({
+      ...prev,
+      images: [...prev.images, result.secure_url],
+    }));
+  };
+
+  const destroyImage = async (image: string) => {
+    const thumbnail = image.split('/').slice(-2).join('/').split('.')[0];
+
+    try {
+      const res = await fetch('/api/destroy', {
+        method: 'POST',
+        body: JSON.stringify({ public_id: thumbnail }),
+      });
+
+      const result = await res.json();
+      return result;
+    } catch (err) {
+      return toast.error(err.message);
+    }
+  };
+
+  const handleThumbnailImage = async () => {
+    if (form.thumbnail) {
+      const res = await destroyImage(form.thumbnail);
+      if (res.result === 'ok') setForm((prev) => ({ ...prev, thumbnail: '' }));
+    }
+  };
+
+  const handleOtherImages = async (idx) => {
+    if (idx > -1) {
+      const res = await destroyImage(form.images[idx]);
+      if (res.result === 'ok') {
+        const images = form.images.filter((i, id) => id !== idx);
+        setForm((prev) => ({ ...prev, images }));
+      }
     }
   };
 
@@ -367,7 +388,7 @@ export default function post({ data }) {
                   accept='image/*'
                   id='thumbnail-image'
                   type='file'
-                  onChange={uploadImage}
+                  onChange={uploadThumbnail}
                 />
                 <IconButton
                   color='primary'
@@ -401,6 +422,9 @@ export default function post({ data }) {
                 >
                   <ContentCopyIcon />
                 </IconButton>
+                <IconButton sx={{ p: '10px' }} onClick={handleThumbnailImage}>
+                  <HighlightOffIcon />
+                </IconButton>
               </Box>
             )}
 
@@ -413,7 +437,7 @@ export default function post({ data }) {
                   accept='image/*'
                   id='other-images'
                   type='file'
-                  onChange={handleSubmit}
+                  onChange={uploadOtherImages}
                 />
                 <IconButton
                   color='primary'
@@ -426,7 +450,7 @@ export default function post({ data }) {
             </Box>
 
             {form.images.length > 0 &&
-              form.images.map((img) => (
+              form.images.map((img, idx) => (
                 <Box
                   sx={{
                     p: '2px 4px',
@@ -446,6 +470,12 @@ export default function post({ data }) {
                   />
                   <IconButton sx={{ p: '10px' }} onClick={() => copyText(img)}>
                     <ContentCopyIcon />
+                  </IconButton>
+                  <IconButton
+                    sx={{ p: '10px' }}
+                    onClick={() => handleOtherImages(idx)}
+                  >
+                    <HighlightOffIcon />
                   </IconButton>
                 </Box>
               ))}
