@@ -7,6 +7,7 @@ import {
   ChangeEvent,
   SyntheticEvent,
 } from 'react';
+import dayjs from 'dayjs';
 import { Editor } from '@tinymce/tinymce-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -15,6 +16,7 @@ import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 // import Chip from '@mui/material/Chip';
+import { styled } from '@mui/material/styles';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import Button from '@mui/material/Button';
@@ -26,7 +28,6 @@ import InputBase from '@mui/material/InputBase';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
-import { styled } from '@mui/material/styles';
 import { GetServerSideProps } from 'next';
 import { toast } from 'react-toastify';
 import Layout from '../components/Layout';
@@ -35,6 +36,7 @@ import {
   getUserData,
   getCategories,
   getTags,
+  updatePost,
 } from '../src/httpRequests';
 
 const ITEM_HEIGHT = 30;
@@ -52,7 +54,7 @@ const Input = styled('input')({
   display: 'none',
 });
 
-export default function post({ data }) {
+export default function post({ data, user }) {
   const initialState = {
     title: data.title,
     slug: data.slug,
@@ -60,7 +62,7 @@ export default function post({ data }) {
     content: data.content,
     author: data.author,
     tags: data.tags,
-    categories: data.categories[0],
+    categories: data.categories,
     thumbnail: data.thumbnail,
     images: data.images,
     updatedAt: data.updatedAt,
@@ -117,6 +119,21 @@ export default function post({ data }) {
 
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
+
+    const postData = { ...form, updatedAt: new Date().toISOString() };
+    try {
+      const res = await updatePost(data.id, postData);
+      const result = res.data;
+
+      if (result) {
+        toast.success('Post successfully saved');
+        setForm(postData);
+      }
+      return null;
+    } catch (err) {
+      return toast.error(err?.response?.data || err?.message);
+    }
+    // console.log('form', form);
   };
 
   const uploadImage = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -169,7 +186,8 @@ export default function post({ data }) {
   const handleThumbnailImage = async () => {
     if (form.thumbnail) {
       const res = await destroyImage(form.thumbnail);
-      if (res.result === 'ok') setForm((prev) => ({ ...prev, thumbnail: '' }));
+      if (res.result === 'ok')
+        setForm((prev) => ({ ...prev, thumbnail: undefined }));
     }
   };
 
@@ -198,7 +216,7 @@ export default function post({ data }) {
   };
 
   return (
-    <Layout title={data.title || 'New Post'}>
+    <Layout title={data.title || 'New Post'} user={user}>
       <div style={{ width: '100%' }}>
         <Typography variant='h5' textAlign='center' py={2}>
           Post details
@@ -293,7 +311,11 @@ export default function post({ data }) {
             >
               Save post
             </Button>
-            <FormControl sx={{ m: 1, width: 300 }}>
+            <Typography sx={{ m: 1, width: 300, color: '000000DE' }}>
+              Last updated at:{' '}
+              {dayjs(form.updatedAt).format('DD-MM-YYYY HH:mm:ss')}
+            </Typography>
+            <FormControl sx={{ m: 1, width: 300 }} size='small'>
               <InputLabel>Status</InputLabel>
               <Select
                 value={form.status}
@@ -301,7 +323,6 @@ export default function post({ data }) {
                 input={<OutlinedInput label='Status' />}
                 name='status'
                 MenuProps={MenuProps}
-                sx={{ py: 2, maxHeight: 40 }}
               >
                 {['Published', 'Draft'].map((name) => (
                   <MenuItem key={name} value={name}>
@@ -311,7 +332,7 @@ export default function post({ data }) {
               </Select>
             </FormControl>
 
-            <FormControl sx={{ m: 1, width: 300 }}>
+            <FormControl sx={{ m: 1, width: 300 }} size='small'>
               <InputLabel>Type</InputLabel>
               <Select
                 value={form.type}
@@ -319,7 +340,6 @@ export default function post({ data }) {
                 input={<OutlinedInput label='Type' />}
                 name='type'
                 MenuProps={MenuProps}
-                sx={{ py: 2, maxHeight: 40 }}
               >
                 {['Post', 'Page'].map((name) => (
                   <MenuItem key={name} value={name}>
@@ -329,7 +349,7 @@ export default function post({ data }) {
               </Select>
             </FormControl>
 
-            <FormControl sx={{ m: 1, width: 300 }}>
+            <FormControl sx={{ m: 1, width: 300 }} size='small'>
               <InputLabel>Tags</InputLabel>
               <Select
                 value={form.tags}
@@ -338,7 +358,6 @@ export default function post({ data }) {
                 name='tags'
                 multiple
                 MenuProps={MenuProps}
-                sx={{ py: 2, maxHeight: 40 }}
               >
                 {tagArray.map((tag) => (
                   <MenuItem key={tag.name} value={tag._id}>
@@ -348,15 +367,15 @@ export default function post({ data }) {
               </Select>
             </FormControl>
 
-            <FormControl sx={{ m: 1, width: 300 }}>
+            <FormControl sx={{ m: 1, width: 300 }} size='small'>
               <InputLabel>Category</InputLabel>
               <Select
                 value={form.categories}
                 onChange={handleChange}
                 input={<OutlinedInput label='Category' />}
                 name='categories'
+                multiple
                 MenuProps={MenuProps}
-                sx={{ py: 2, maxHeight: 40 }}
               >
                 {catArray.map((cat) => (
                   <MenuItem key={cat.name} value={cat._id}>
@@ -366,7 +385,7 @@ export default function post({ data }) {
               </Select>
             </FormControl>
 
-            <LocalizationProvider dateAdapter={DateAdapter}>
+            <LocalizationProvider dateAdapter={DateAdapter} size='small'>
               <DateTimePicker
                 label='Update date'
                 value={form.updatedAt}
