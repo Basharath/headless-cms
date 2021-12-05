@@ -4,8 +4,11 @@ import { AppProps } from 'next/app';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider, EmotionCache } from '@emotion/react';
+import { ToastContainer } from 'react-toastify';
 import theme from '../src/theme';
 import createEmotionCache from '../src/createEmotionCache';
+import { getUserData } from '../src/httpRequests';
+import 'react-toastify/dist/ReactToastify.css';
 import '../styles/globals.css';
 
 // Client-side cache, shared for the whole session of the user in the browser.
@@ -18,6 +21,18 @@ interface MyAppProps extends AppProps {
 
 export default function MyApp(props: MyAppProps) {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
+  const [user, setUser] = React.useState(null);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await getUserData();
+        setUser(res.data);
+      } catch (err) {
+        // toast.error(err?.response?.data || err?.message);
+      }
+    })();
+  }, []);
 
   return (
     <CacheProvider value={emotionCache}>
@@ -27,8 +42,19 @@ export default function MyApp(props: MyAppProps) {
       </Head>
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+        <ToastContainer
+          position='top-left'
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
         <CssBaseline />
-        <Component {...pageProps} />
+        <Component {...pageProps} user={user} />
       </ThemeProvider>
     </CacheProvider>
   );
