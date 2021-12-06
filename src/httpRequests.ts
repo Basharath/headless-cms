@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-// const baseURL = process.env.NEXT_PUBLIC_API_URL;
-const baseURL = 'http://localhost:8080/api';
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+// const baseURL = 'http://localhost:8080/api';
 axios.defaults.withCredentials = true;
 const API = axios.create({ baseURL });
 
