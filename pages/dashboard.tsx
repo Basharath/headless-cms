@@ -17,6 +17,8 @@ import {
   deletePost,
   setToken,
 } from '../src/httpRequests';
+import AddTag from '../components/AddTag';
+import AddCategory from '../components/AddCategory';
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -42,6 +44,8 @@ export default function Dashboard({ posts, user }) {
   const [selection, setSelection] = useState([]);
   const [currentPosts, setCurrentPosts] = useState(posts);
   const [open, setOpen] = useState(false);
+  const [tagsModal, setTagsModal] = useState(false);
+  const [categoriesModal, setCategoriesModal] = useState(false);
 
   const columns: GridColDef[] = [
     { field: 'title', headerName: 'Type', width: 350 },
@@ -113,18 +117,32 @@ export default function Dashboard({ posts, user }) {
         <Typography variant='h5' textAlign='center' py={2}>
           POSTS
         </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-          <Button
-            onClick={() => setOpen(true)}
-            color='error'
-            sx={{ mr: '20px' }}
-            variant='contained'
-          >
-            Delete Post
-          </Button>
-          <Button onClick={handleAddPost} variant='contained'>
-            Add post
-          </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+          <div>
+            <Button
+              sx={{ mr: '20px' }}
+              variant='outlined'
+              onClick={() => setTagsModal(true)}
+            >
+              Add Tag
+            </Button>
+            <Button variant='outlined' onClick={() => setCategoriesModal(true)}>
+              Add Category
+            </Button>
+          </div>
+          <div>
+            <Button
+              onClick={() => setOpen(true)}
+              color='error'
+              sx={{ mr: '20px' }}
+              variant='contained'
+            >
+              Delete Post
+            </Button>
+            <Button onClick={handleAddPost} variant='contained'>
+              Add post
+            </Button>
+          </div>
         </Box>
 
         <StyledDataGrid
@@ -140,6 +158,8 @@ export default function Dashboard({ posts, user }) {
           disableSelectionOnClick
         />
       </div>
+      <AddTag status={tagsModal} onStatus={setTagsModal} />
+      <AddCategory status={categoriesModal} onStatus={setCategoriesModal} />
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <Typography sx={{ textAlign: 'center' }}>
