@@ -313,7 +313,7 @@ export default function post({ data, user }) {
             </Button>
             <Typography sx={{ m: 1, width: 300, color: '000000DE' }}>
               Last updated at:{' '}
-              {dayjs(form.updatedAt).format('DD-MM-YYYY HH:mm:ss')}
+              {dayjs(form.updatedAt).format('MMM DD, YYYY HH:mm')}
             </Typography>
             <FormControl sx={{ m: 1, width: 300 }} size='small'>
               <InputLabel>Status</InputLabel>
@@ -421,7 +421,7 @@ export default function post({ data, user }) {
             {form.thumbnail && (
               <Box
                 sx={{
-                  p: '2px 4px',
+                  p: '0 2px',
                   display: 'flex',
                   alignItems: 'center',
                   border: '1px solid #c4c4c4',
@@ -436,12 +436,12 @@ export default function post({ data, user }) {
                   value={form.thumbnail}
                 />
                 <IconButton
-                  sx={{ p: '10px' }}
+                  sx={{ p: '5px' }}
                   onClick={() => copyText(form.thumbnail)}
                 >
                   <ContentCopyIcon />
                 </IconButton>
-                <IconButton sx={{ p: '10px' }} onClick={handleThumbnailImage}>
+                <IconButton sx={{ p: '5px' }} onClick={handleThumbnailImage}>
                   <HighlightOffIcon />
                 </IconButton>
               </Box>
@@ -472,7 +472,7 @@ export default function post({ data, user }) {
               form.images.map((img, idx) => (
                 <Box
                   sx={{
-                    p: '2px 4px',
+                    p: '0 4px',
                     display: 'flex',
                     alignItems: 'center',
                     border: '1px solid #c4c4c4',
@@ -487,11 +487,11 @@ export default function post({ data, user }) {
                     placeholder={img}
                     value={img}
                   />
-                  <IconButton sx={{ p: '10px' }} onClick={() => copyText(img)}>
+                  <IconButton sx={{ p: '5px' }} onClick={() => copyText(img)}>
                     <ContentCopyIcon />
                   </IconButton>
                   <IconButton
-                    sx={{ p: '10px' }}
+                    sx={{ p: '5px' }}
                     onClick={() => handleOtherImages(idx)}
                   >
                     <HighlightOffIcon />
